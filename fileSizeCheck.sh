@@ -16,12 +16,12 @@ if [[ "${1}" == "-r" ]]; then
         PASSWORD="${3}"
 
         if ! host -W 1 "${SERVER}" > /dev/null 2>&1; then
-            printf "\n\e[1;31m%s\e[0m\n" "ERROR - domain \"${SERVER}\" doesn't exists."
+            printf "\n\e[1;31m%s\e[0m\n\n" "ERROR - domain \"${SERVER}\" doesn't exists."
             return 1
         else
             if ! sshpass -p "${PASSWORD}" ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=no \
                      -q "${USR}"@"${SERVER}" 'exit' > /dev/null 2>&1; then
-                printf "\n\e[1;31m%s\e[0m\n" "ERROR - ssh connection to ${SERVER} is not possible."
+                printf "\n\e[1;31m%s\e[0m\n\n" "ERROR - ssh connection to ${SERVER} is not possible."
                 return 1
             fi
         fi 
