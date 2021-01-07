@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+validationTargetAndQty() {
+    [[ ! -e "${TARGET}" ]] && { printf "\n\e[1;31m%s\e[0m\n\n" "ERROR - Directory does not exists."; exit; }
+    [[ ! ${NVALUE} =~ [[:digit:]]{1,} ]] || [[ "${NVALUE}" -lt 1 ]] && { printf "\n\e[1;31m%s\e[0m\n\n" "ERROR - We need at least one file to be extracted for size sorting. Example: maxSize X, where X is the number of files."; exit; }
+}
+
 if [[ "${1}" == "-r" ]]; then
 
     SERVER="${2}"
@@ -17,21 +22,21 @@ if [[ "${1}" == "-r" ]]; then
 
         if ! host -W 1 "${SERVER}" > /dev/null 2>&1; then
             printf "\n\e[1;31m%s\e[0m\n\n" "ERROR - domain \"${SERVER}\" doesn't exists."
-            return 1
+            exit
         else
             if ! sshpass -p "${PASSWORD}" ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=no \
                      -q "${USR}"@"${SERVER}" 'exit' > /dev/null 2>&1; then
                 printf "\n\e[1;31m%s\e[0m\n\n" "ERROR - ssh connection to ${SERVER} is not possible."
-                return 1
+                exit
             fi
         fi 
     }
 
     main() {
-        sshpass -p "${PASSWORD}" ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=no -q "${USER}"@"${SERVER}" 2> /dev/null << EOF
+        
+        validationTargetAndQty
 
-        [[ ! ${NVALUE} =~ [[:digit:]]{1,} ]] || [[ "${NVALUE}" -lt 1 ]] && { printf "\n\e[1;31m%s\e[0m\n" "ERROR - We need at least one file to be extracted for size sorting. Example: maxSize X, where X is the number of files."; exit; }
-        [[ ! -e "${TARGET}" ]] && { printf "\n\e[1;31m%s\e[0m\n" "ERROR - Directory does not exists."; exit; }
+        sshpass -p "${PASSWORD}" ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=no -q "${USER}"@"${SERVER}" 2> /dev/null << EOF
 
         showProgress() {
             printf "\n\e[1m%s\e[0m" "Searching: ["
@@ -102,8 +107,7 @@ elif [[ ${1} == "-l" ]]; then
     INV_CURSOR=$(tput civis)
     NRM_CURSOR=$(tput cnorm)
 
-    [[ ! ${NVALUE} =~ [[:digit:]]{1,} ]] || [[ "${NVALUE}" -lt 1 ]] && { printf "\n\e[1;31m%s\e[0m\n" "***ERROR***We need at least one file to be extracted for size sorting. Example: maxSize X, where X is the number of files."; return 1; }
-    [[ ! -e "${TARGET}" ]] && { printf "\n\e[1;31m%s\e[0m\n" "***ERROR***Directory does not exists."; return 1; }
+    validationTargetAndQty
 
     printing_lines() {
         local number="${1}"
